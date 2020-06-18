@@ -1,4 +1,9 @@
 # Prerequisites
+CMakeLists.txt
+.idea
+cmake-build-debug
+
+.DStore
 *.d
 
 # Compiled Object files
