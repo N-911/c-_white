@@ -3,7 +3,7 @@ CMakeLists.txt
 .idea
 cmake-build-debug
 
-.DStore
+.DS_Store
 *.d
 
 # Compiled Object files
