@@ -14,15 +14,23 @@ public:
     double Apply(double source_value) const {
         if (operation == '+') {
             return source_value + value;
-        } else {  // operation == '-'
+        } else if (operation == '-') {  // operation == '-'
             return source_value - value;
+        } else if (operation == '*') {
+            return source_value * value;
+        } else  {
+            return source_value / value;
         }
     }
     void Invert() {
         if (operation == '+') {
             operation = '-';
-        } else {  // operation == '-'
+        } else if (operation == '-') {  // operation == '-'
             operation = '+';
+        } else if (operation == '*') {
+            operation = '/';
+        } else if (operation == '/') {
+            operation = '*';
         }
     }
 private:
@@ -66,7 +74,8 @@ struct Params {
 Function MakeWeightFunction(const Params& params,
                             const Image& image) {
     Function function;
-    function.AddPart('-', image.freshness * params.a + params.b);
+    function.AddPart('*', params.a);
+    function.AddPart('-', image.freshness * params.b);
     function.AddPart('+', image.rating * params.c);
     return function;
 }
@@ -88,7 +97,6 @@ int main() {
     Image image = {10, 2, 6};
     Params params = {4, 2, 6};
     cout << ComputeImageWeight(params, image) << endl;
-    cout << ComputeQualityByWeight(params, image, 46) << endl;
+    cout << ComputeQualityByWeight(params, image, 52) << endl;
     return 0;
 }
-
