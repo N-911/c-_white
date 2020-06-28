@@ -17,33 +17,21 @@ public:
     }
 
     Rational(int numerator, int denominator) {
-        if (denominator < 0 && numerator > 0) {
+        const int temp = gcd(numerator, denominator);
+        numerator1 = numerator / temp;
+        denominator1 = denominator / temp;
+        if (denominator < 0) {
             numerator1 = -numerator;
-            denominator1 = abs(denominator);
-        }
-        else if (denominator < 0 && numerator < 0){
-            numerator1 = abs(numerator);
-            denominator1 = abs(denominator);
-        }
-        else if (numerator == 0) {
-            numerator1 = 0;
-            denominator1 = 1;
-        }
-        else {
-            numerator1 = numerator;
-            denominator1 = abs(denominator);
+            denominator1 = -denominator;
         }
     }
 
-
     int Numerator() const {
-        int temp = gcd(numerator1, denominator1);
-        return numerator1 / temp;
+        return numerator1;
     }
 
     int Denominator() const {
-        int temp = gcd(numerator1, denominator1);
-        return  denominator1 / temp;
+        return  denominator1;
     }
 
 private:
@@ -52,12 +40,7 @@ private:
 };
 
 bool operator==(const Rational& lhs, const Rational& rhs) {
-    if ((lhs.Numerator() == rhs.Numerator()) && (lhs.Denominator() == rhs.Denominator())) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return (lhs.Numerator() == rhs.Numerator()) && (lhs.Denominator() == rhs.Denominator());
 }
 
 Rational operator+(const Rational& lhs, const Rational& rhs) {
@@ -72,36 +55,30 @@ Rational operator-(const Rational& lhs, const Rational& rhs) {
                     (rhs.Numerator() * (temp / rhs.Denominator())), temp);
 }
 Rational operator*(const Rational& lhs, const Rational& rhs) {
-    return Rational(lhs.Numerator() * rhs.Numerator(), lhs.Denominator() * rhs.Denominator());
+    return {lhs.Numerator() * rhs.Numerator(),
+             lhs.Denominator() * rhs.Denominator()};
 }
 
 Rational operator/(const Rational& lhs, const Rational& rhs) {
-    return Rational(lhs.Numerator() * rhs.Denominator(), lhs.Denominator() * rhs.Numerator());
+    return {lhs.Numerator() * rhs.Denominator(),
+            lhs.Denominator() * rhs.Numerator()};
 }
 
 ostream& operator<<(ostream& stream, const Rational& rational) {
-    stream << rational.Numerator() << '/' << rational.Denominator();
-    return stream;
+    return  stream << rational.Numerator() << '/' << rational.Denominator();
 }
 
 istream& operator>>(istream& stream, Rational& rational) {
     int n = 0;
     int d = 0;
+    char delim;
 
     if (stream) {
-        stream >> n;
+        stream >> n >> delim >> d;
+        if (stream && delim == '/') {
+            rational = Rational(n, d);
+        }
     }
-    else {
-        return stream;
-    }
-    stream.ignore(1);
-    if (stream) {
-        stream >> d;
-    }
-    else {
-        return stream;
-    }
-    rational = Rational(n, d);
     return stream;
 }
 
@@ -126,8 +103,6 @@ bool operator<(const Rational& lhs, const Rational& rhs) {
         return false;
     }
 }
-
-
 
 int main() {
     {
