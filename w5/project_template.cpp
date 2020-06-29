@@ -3,6 +3,9 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -19,9 +22,15 @@ public:
         day = new_day;
     }
 
-  int GetYear() const;
-  int GetMonth() const;
-  int GetDay() const;
+  int GetYear() const {
+      return year;
+    }
+  int GetMonth() const {
+      return month;
+    }
+  int GetDay() const {
+      return day;
+    }
 
 private:
     int year;
@@ -45,11 +54,22 @@ istream& operator>>(istream& stream, Date& new_date) {
     return stream;
 }
 
-/*
 bool operator<(const Date& lhs, const Date& rhs) {
-
+    if (lhs.GetYear() != rhs.GetYear()) {
+        return lhs.GetYear() < rhs.GetYear();
+    }
+    else {
+        if (lhs.GetMonth() != rhs.GetMonth()) {
+            return lhs.GetMonth() < rhs.GetMonth();
+        } else {
+            if (lhs.GetDay() != rhs.GetDay()) {
+                return lhs.GetDay() < rhs.GetDay();
+            } else {
+                return false;
+            }
+        }
+    }
 }
-*/
 
 class Database {
 public:
@@ -58,55 +78,103 @@ public:
           if (find(d_base[date].begin(), d_base[date].end(), event) == d_base[date].end()) {
               d_base[date].push_back(event);
           }
-          else {
-              d_base[date].push_back(event);
+      }
+      else {
+          d_base[date].push_back(event);
+      }
+      sort(d_base[date].begin(), d_base[date].end());
+  }
+
+  bool DeleteEvent(const Date& date, const string& event) {
+      if (d_base.count(date) > 0) {
+          int i = 0;
+          for (auto& item : d_base[date]) {
+              if (item == event) {
+                  d_base[date].erase(d_base[date].begin() + i);
+                  return true;
+              }
+              ++i;
           }
       }
+      return false;
   }
-  bool DeleteEvent(const Date& date, const string& event);
-
-//      cout << "Deleted successfully" << cout << endl;
-//      cout << "Event not found" << cout << endl;
-
 
   int  DeleteDate(const Date& date) {
-      int n = d_base.count(date);
+      int n = d_base[date].size();
       if (d_base.count(date) > 0) {
           d_base.erase(date);
       }
-      cout << "Deleted " << n << " events" << endl;
       return n;
   }
 
-//  /* ??? */ Find(const Date& date) const;
+  vector<string> Find(const Date& date) const {
+      vector<string> res;
+
+      if (d_base.count(date) > 0) {
+          res = d_base.at(date);
+      }
+      return res;
+  }
   
-  void Print() const;
+  void Print() const {
+      for (const auto& [date, strs] : d_base) {
+          cout << date << ' ';
+          for (const auto& j : strs) {
+              cout << j;
+          }
+
+      }
+  }
 
 private:
     map<Date, vector<string>> d_base;
 };
 
 int main() {
-  Database db;
-  set<string> active_commands = {"Add", "Del", "Find", "Print"};
+    Database db;
+    set<string> active_commands = {"Add", "Del", "Find", "Print"};
     
-  string command;
-  while (getline(cin, command)) {
-      if (active_commands.count(command) == 0) {
-          cout << "Unknown command: " << command << endl;
-          continue;
-      }
-      Date new_date;
-      string event;
+    string command;
 
-      cin >> new_date;
-      cin >> event;
 
-      if (command == "Add" && event.size() > 0) {
-          db.AddEvent(new_date, event);
-      }
-    // Считайте команды с потока ввода и обработайте каждую
+    while (getline(cin, command)) {
+        istringstream input(command);
+        if (input) {
+            Date new_date;
+            string event;
+            string operation;
+
+            input >> operation >> new_date >> event;
+            if (active_commands.count(operation) == 0) {
+                cout << "Unknown command: " << operation << endl;
+                continue;
+            }
+            if (operation == "Add" && event.size() > 0) {
+                db.AddEvent(new_date, event);
+            }
+            else if (operation == "Del" && event.size() == 0 ) {
+                cout << "Deleted " << db.DeleteDate(new_date) << " events" << endl;
+            }
+            else if (operation == "Del" && event.size() != 0 ) {
+                if (db.DeleteEvent(new_date, event)) {
+                    cout << "Deleted successfully" << endl;
+                }
+                else {
+                    cout << "Event not found" << endl;
+                }
+            }
+            else if (operation == "Find") {
+                for (auto item : db.Find(new_date)) {
+                    cout << item << endl;
+                }
+            }
+            else if (operation == "Print") {
+                db.Print();
+            }
+        }
+        else {
+            break;
+        }
   }
-
   return 0;
 }
